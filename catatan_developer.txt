@@ -1,0 +1,281 @@
+https://www.youtube.com/watch?v=xF0Z6Te2yO8&list=PLNZgKPV6OMfrho0UcDfWERelzvCg2mWuJ&index=7
+
+Terimakasih untuk yang sudah mendukung channel @majacode dengan menekan tombol subscribe dan menyalakan tombol lonceng. Dukungan anda sangat berharga bagi perkembangan channel ini. Terimakasih..  
+
+Whatsapp Rest Api Sederhana bisa digunakan untuk mengirim notifikasi WA dari aplikasi lain .. 
+Contoh penggunaan dalam aplikasi surat, jika surat atau paket  sudah datang,  maka akan disampaikan notifikasi ke calon penerima surat/paket melalui WA ...
+
+Pastikan pada pc sudah terinstall Nodejs Versi 14 keatas dan mempunyai pengetahuan dasar tentang javascrip/nodejs  
+
+aplikasi Whatsapp Rest Api sederhana bisa di download pada link di bawah ini :
+update 
+ini versi sudah saya update ke bailyes 5.0.0 
+https://drive.google.com/file/d/1uYRO...
+
+untuk mengirim ke group 
+perhatikan pada baris 115 
+let getGroups = await sock.groupFetchAllParticipating 
+itu akan menampilan group dari nomor wa yang dijadikan bot 
+fungsinya untuk melihat nomor id dari groupnya,  jadi kalau  kirim form data 
+parameter id_group di isi id dari groupnya  
+
+seperti pada baris 401 send message group 
+parameter yang di kirim adalah : 
+pesankirim 
+id_group
+fileDikirim 
+
+
+ klo ngirim pesan ke beberapa nomor sekaligus (broadcast) script methode POST nya gimana.
+Metodenya 
+1.dari Aplikasi lain POST Data ke Rest Api ini (nah ini sebenarnya fungsi whastapp api ini )
+
+trus yang ke 
+2. Select database Kontak(misal ini).. trus ambil semua nomor WA dan dikirimi pesan oleh bot 
+
+ang, cara memperkecil ukuran gambar qr code terminal gimana yah? soalnya menurut saya ukurannya terlalu besar
+scan aja liwat broser  .. buka browser localhost:8000/scan
+
+kalau mau buat WA blast  tapi ambil data dari database pake library ini kira2 bisa tidak ya bang?
+Bisa .. tapi agak panjang ..  tapi tinggal query aja  data di db  trus each not empty .. kirimi pesan tinggal install aja mysql nya  
+contoh sederhananya ini ya
+//require mysql 
+const mysql = require('mysql');
+//selanjunya bikin koneksi 
+const conn = mysql.createConnection({
+	host: 'localhost',
+	user: 'root',
+	password:'',
+	database: 'wa_bot'
+});
+conn.connect((err) =>{
+	if(err) throw err;
+	console.log('Database Connected...');
+});
+
+// buat array kata kunci 
+let sql_inbox = "select no_wa,pesan from inbox where status ='false'";
+
+conn.query(sql_inbox, async function (err, result) {
+	if(err) throw err;
+	let jumrow = result.length;
+	if(jumrow > 0) {
+		for(let i=0;i<jumrow;i++){
+			const response = await sock.sendMessage(result[i].no_wa, {text: result[i].pesan});
+		}
+	}          
+	console.log('jangan lupa dikasih delay setelah mengirim sedetik atau 2 detik');
+});
+
+
+pak bikin sampel yg responnya ngambil dari database dong. terimakasih..
+//pertama bikin database  wa_bot 
+selanjutnya buat table kata_kunci_db (id, katakunci,  jawaban)
+
+//require mysql taruh diatas
+const mysql = require('mysql');
+
+//selanjunya bikin koneksi 
+const conn = mysql.createConnection({
+  host: 'localhost',
+  user: 'root',
+  password: ',
+  database: 'wa_bot'
+});
+conn.connect((err) =>{
+  if(err) throw err;
+  console.log('Database Connected...');
+});
+
+//langkah selanjutnya pada baris 137 scripnya adalah 
+ if(!messages[0].key.fromMe && pesanMasuk === "ping"){
+       await sock.sendMessage(noWa, {text: "Pong"},{quoted: messages[0] });
+ }else{
+      await sock.sendMessage(noWa, {text: "Saya adalah Bot!"},{quoted: messages[0] });
+}
+===============================
+ini diganti saja dengan ini 
+=======================
+if(!messages[0].key.fromMe && !messages[0].key.participant ){
+	let sql_katakunci = 'SELECT id,kata_kunci,jawaban FROM wa_bot.kata_kunci where kata_kunci ='+pesanMasuk+;
+	await conn.query(sql_katakunci, async function (err, result) {
+		if(err) throw err;
+		let row_jawaban = result.length;
+		if (row_jawaban > 0){
+			for(let i=0;i<row_jawaban;i++){
+		        	let id_jawaban  = result[i].id;
+				let kata _kunci = result[i].kata_kunci;
+				let jawaban = result[i].jawaban;
+				await sock.sendMessage(noWa, {text: jawaban},{quoted: messages[0] }).then(async(response) => {
+					console.log(`Pesan telah terkirim ke user ${noWa}`);
+				});
+			}
+		}
+		else {
+			await sock.sendMessage(noWa, {text: "kata kunci tidak dikenali"},{quoted: messages[0]})
+			.then(async(response) => {
+				console.log(`Pesan kata kunci tidak dikenali terkirim ke user ${noWa}`);
+			});
+		}
+	}
+}
+
+
+// coba dulu .. nanti kalau error koment lagi   xixixi
+
+biar bisa multi user / session gmn ya mas?
+wahh agak panjang itu ngodingnya... kata kunci nya pakai baileys ini sebagai Child Prosess .. jadi bisa multi wa .. heheh hapyy broswing om ..
+
+Makasih sebelumnya gan, Mas kalau kirim lebih dari 1 nomor gimna mas trus kuota pengirimannya berapa perhari mas?
+No limit om 
+cuma kalau bisa sih pas ngirim kasih delay  1 detik buat jaga jaga  
+
+ini contoh  nomor WA di push ke variable array 
+//=====================
+
+//data array nomor WA 
+const numwa = ['081235xxxx', '081236xxxx', '081235xxxx'];
+
+let pesankirim = "Berikut kami kirim pesan";
+let file = "./file/kelinci_air.pdf";
+
+numwa.forEach(nomorHP => {
+	//cek apakah Nomor HP terregister di Whatsapp
+	const exists = await sock.onWhatsApp('62' + nomorHP.substring(1) + "@s.whatsapp.net");	
+	
+    if(exists?.jid || (exists && exists[0]?.jid)) {
+		await sock.sendMessage(exists.jid || exists[0].jid, {
+			document: { url: file },
+			caption: pesankirim, 
+			fileName: path.basename(file), 
+			mimetype: file.mimetype 
+		}).then((result) => {
+			console.log("Pesan Terkirim");
+		}).catch((err) => {
+            console.log("pesan tidak terkirim");
+        });
+    }
+	else{
+		console.log("Nomor HP tidak terdaftar di WA");
+    }
+});
+
+
+
+Mas bagaimana caranya jika orang chat untuk pertama kalinya terdapat pesan "Selamat datang" atau jika dia melakukan chat lagi waktunya lebih dari 10menit muncul "Selamat datang" juga. Selain itu tidak muncul. Terima kasih
+//coba dimasukkan ke array setiap nomor baru masuk 
+//buat variable array tampungan  letakkan diatas 
+//async function connectToWhatsApp() {
+let arraytime = [];
+let nomorhp=[];
+
+//setelah itu cek pada even message.upsert 
+//sock.ev.on("messages.upsert",
+setelah if(!messages[0].key.fromMe) {
+tambahkan seperti ini 
+const noWa = messages[0].key.remoteJid;
+				let arraytime_str = JSON.stringify(arraytime);
+				let parse_arraytime = JSON.parse(arraytime_str);
+				
+				let jum_arraytime = parse_arraytime.length;
+				console.log(jum_arraytime);
+				for(var i=0; i < jum_arraytime; i++){
+					nomorhp.push(parse_arraytime[i].Numhp)
+					if(parse_arraytime[i].Numhp === noWa){
+						console.log("No Hp terdapat dalam arraytime ")
+						let timepesan = parse_arraytime[i].time
+						var timenow = Math.floor(new Date().getTime() / 1000);
+						if(timenow >= timepesan){
+							//hapus data nomor HP dan time dalam arraytime  
+							let index_arr = arraytime.indexOf(parse_arraytime[i]);
+							arraytime.splice(index_arr, 1);	
+						}
+						// lakukan disini proses jawaban disini 
+						const response = await sock.sendMessage(noWa, {text: "Tekan 1 untuk Menu1\nTekan 2 untuk menu 2 "},{quoted: messages[0] });
+					}
+				}	
+				if(nomorhp.includes(noWa)){
+					console.log("No Hp Sudah masuk ke array")
+				}
+				else {
+					console.log("No Hp belum masuk ke array / nomor baru ")
+					//push data nomer hp dan time kedalam arraytime 
+					//dalam contoh dibawah ini ditambah 60 detik / 1 menit 
+					arraytime.push({"Numhp":noWa,"time":Math.floor(new Date().getTime() / 1000) + 60 })
+					// lakukan disini proses jawaban untuk pertama kali client mengirim pesan 
+					// misal: send message(hi)
+					const response = await sock.sendMessage(noWa, {text: "Hatakan Hi katakan hi "},{quoted: messages[0] });
+				}
+
+
+mantap mas, mas mau tanya lagi, ini kan saya sudah di hosting, tapi kenapa kalau lebih dari 24 jam tidak ada yg chat maka script auto reply nya gak jalan? Kurang dimana mas? Terima kasih
+ @pixelten5965  coba sampean akali dengan mengirim pesan ke group tiap 1 jam  ... kemungkinan session qrcode berakhir karena mungkin server whatsapp web mengangap tidak ada aktivitas
+
+@majacode
+9 months ago
+Mungkin karena tak ada aktifitas . maka sama wa servernya di logout ..  coba  bikin tiap hari  saat  jam 06.00 pagi.  kirim pesan ke nomor wa lain .. bisa pakai cron jobs . yang di cron tabs ...  ..
+
+ oke mantap bs send group dan send private kak pakek baileys 5...
+ yg jd masalah knp qrcode nya tdk keluar di domain:port/scan hanya tampil gbr centang udh nunggu 5 menitan g keluar2 kak mohon petunjuk
+ iya ada yang lupa 
+ tambahin if ini 
+ if (update.qr) 
+         {
+             qr = update.qr;
+             updateQR("qr");
+         }
+         else if(qr = undefined)
+         {
+             updateQR("loading");
+         }
+         else
+         {
+             if (update.connection === "open") {
+                 updateQR("qrscanned");
+                 return;
+             }
+         }	
+ tempatkan setelah else if(connection === 'open') {
+
+ jadi seperti ini 
+
+ //=========================================
+ }else if(connection === 'open') {
+             console.log('opened connection');
+             let getGroups = await sock.groupFetchAllParticipating();
+             let groups = Object.values(await sock.groupFetchAllParticipating())
+             //console.log(groups);
+             for (let group of groups) {
+                 console.log("id_group: "+group.id+" || Nama Group: " +group.subject);
+             }
+             return;
+         }
+
+     if (update.qr) 
+         {
+             qr = update.qr;
+             updateQR("qr");
+         }
+         else if(qr = undefined)
+         {
+             updateQR("loading");
+         }
+         else
+         {
+             if (update.connection === "open") {
+                 updateQR("qrscanned");
+                 return;
+             }
+         }	
+ //=====================================
+
+
+
+kak mau tanya ini kan satu arah hanya notipikasi aja dari wa...kalo 2 arah gmn kak jd kita bs reply jawaban dari wa si penerima..itu harus ditambahkan apa ya kak mohon arahan nya kak
+pada even message.upsert 
+sock.ev.on("messages.upsert ... bla bla bla ..
+sudah ada di video bot wa yang pertama 
+https://youtu.be/uTapLGN8UKs
+ untuk memahami autoreply .. silahkan di simak di video berikut 
+https://youtu.be/uTapLGN8UKs 
+jika sudah paham alurnya .. nati bisa di aplikasikan ke script yang wa api ini
